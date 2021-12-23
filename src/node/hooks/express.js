@@ -173,8 +173,10 @@ exports.restartServer = async () => {
     }));
   }
 
-  sessionStore = new SessionStore();
+  sessionStore = new SessionStore(settings.cookie.sessionRefreshInterval);
   exports.sessionMiddleware = expressSession({
+    propagateTouch: true,
+    rolling: true,
     secret: settings.sessionKey,
     store: sessionStore,
     resave: false,
