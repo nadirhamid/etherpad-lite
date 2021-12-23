@@ -16,6 +16,7 @@ const webaccess = require('./express/webaccess');
 
 const logger = log4js.getLogger('http');
 let serverName;
+let sessionStore;
 const sockets = new Set();
 const socketsEvents = new events.EventEmitter();
 const startTime = stats.settableGauge('httpStartTime');
@@ -49,6 +50,8 @@ const closeServer = async () => {
   exports.server = null;
   startTime.setValue(0);
   logger.info('HTTP server closed');
+  if (sessionStore) sessionStore.shutdown();
+  sessionStore = null;
 };
 
 exports.createServer = async () => {
@@ -170,9 +173,10 @@ exports.restartServer = async () => {
     }));
   }
 
+  sessionStore = new SessionStore();
   exports.sessionMiddleware = expressSession({
     secret: settings.sessionKey,
-    store: new SessionStore(),
+    store: sessionStore,
     resave: false,
     saveUninitialized: true,
     // Set the cookie name to a javascript identifier compatible string. Makes code handling it
