@@ -860,11 +860,12 @@ const handleClientReady = async (socket, message) => {
   // Check if this author is already on the pad, if yes, kick the other sessions!
   const roomSockets = _getRoomSockets(pad.id);
 
+  var bootDuplicateSockets = false;
   for (const otherSocket of roomSockets) {
     // The user shouldn't have joined the room yet, but check anyway just in case.
     if (otherSocket.id === socket.id) continue;
     const sinfo = sessioninfos[otherSocket.id];
-    if (sinfo && sinfo.author === sessionInfo.author) {
+    if ((sinfo && sinfo.author === sessionInfo.author) && bootDuplicateSockets) {
       // fix user's counter, works on page refresh or if user closes browser window and then rejoins
       sessioninfos[otherSocket.id] = {};
       otherSocket.leave(sessionInfo.padId);
